@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #form {
+            text-align: center;
+        }
+        textarea {
+            width: 300px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div id="form">
+        <h1>Text to Speech</h1>
+        <textarea id="textInput" placeholder="Enter text here..."></textarea>
+        <br><br>
+        <button onclick="generateAudio()">Generate Audio</button>
+        <br><br>
+        <audio id="audioPlayer" controls></audio>
+    </div>
+
+    <script>
+        function generateAudio() {
+            const textInput = document.getElementById('textInput');
+            const text = textInput.value.trim();
+            if (!text) {
+                alert('Please enter some text first!');
+                return;
+            }
+
+            fetch('http://192.168.254.12:8000/generate_tts/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'text=' + encodeURIComponent(text)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const audioPlayer = document.getElementById('audioPlayer');
+                audioPlayer.src = url;
+                audioPlayer.play();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request.');
+            });
+        }
+    </script>
+</body>
+</html>
